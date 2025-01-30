@@ -1,40 +1,29 @@
-{{- if .Values.ingress.enabled }}
-{{- $fullName := include "openvas.fullname" . -}}
----
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion }}
 apiVersion: networking.k8s.io/v1
-{{- else -}}    
-apiVersion: extensions/v1
-{{- end }}
 kind: Ingress
 metadata:
-  name: {{ include "openvas.fullname" . }}
+  name: {{ .Release.Name }}-ingress
+  namespace: {{ template "openvas.namespace" . }}
+
   annotations:
-{{ toYaml .Values.ingress.annotations | indent 4 }}
-  labels:
-    {{- include "openvas.labels" . | nindent 4 }}
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+  #   cert-manager.io/cluster-issuer: "letsencrypt"  # Reference the ClusterIssuer
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+  #   acme.cert-manager.io/http01-edit-in-place: "true"
+
 spec:
+  ingressClassName: nginx  # Specify the Ingress class name
+  tls:
+  - hosts:
+      - openvas-new.office.g-s.cloud # Replace with your domain
+    secretName: tls-secret  # Name of the secret to hold the TLS certificate
   rules:
-  {{- range .Values.ingress.hosts }}
-  - host: {{ .host | quote }}
+  - host: openvas-new.office.g-s.cloud  # Replace with your domain
     http:
       paths:
-      - backend:
-          service:
-            port:
-              number: 80
-            name: openvas-service
-        path: /
+      - path: /
         pathType: Prefix
-  {{- end }}
-  {{- if .Values.ingress.tls }}
-  tls:
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
-  {{- end }}
-{{- end -}}
+        backend:
+          service:
+            name: {{ include "openvas.fullname" . }}-service  # Replace with your service name
+            port:
+              number: 80  # Replace with your service's port

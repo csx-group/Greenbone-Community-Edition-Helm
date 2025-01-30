@@ -215,7 +215,7 @@ spec:
           image: greenbone/gsa:stable
           imagePullPolicy: Always
           ports:
-            - containerPort: 80
+            - containerPort: 9392
               protocol: TCP
           volumeMounts:
             - name: gvmd-socket
@@ -309,23 +309,43 @@ spec:
             {{- toYaml .Values.podSecurityContext | nindent 12 }}
 
       volumes:
-        - name: shared-storage
-          emptyDir: {}
-        - name: gvmd-storage
-          persistentVolumeClaim:
-            claimName: gvmd-pvc
-        - name: openvas-storage
-          persistentVolumeClaim:
-            claimName: openvas-pvc
-        - name: psql-storage
-          persistentVolumeClaim:
-            claimName: psql-pvc
         - name: init-scripts
           configMap:
             name: init-scripts-config
             defaultMode: 0755
+      {{- if .Values.nfs_volume.enabled }}
+        - name: shared-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.nfs_volume.shared_storage.path }}
+        - name: gvmd-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.nfs_volume.gvmd_storage.path }}
+        - name: openvas-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.nfs_volume.openvas_storage.path }}
+        - name: psql-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.nfs_volume.psql_storage.path }}
         - name: gvmd-socket
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: {{ .Values.nfs_volume.gvmd_socket.path }}
+      {{- else }}
+        - name: shared-storage
+          hostPath:
+            path: {{ .Values.host_volume.shared_storage.path }}
+        - name: gvmd-storage
+          hostPath:
+            path: {{ .Values.host_volume.gvmd_storage.path }}
+        - name: openvas-storage
+          hostPath:
+            path: {{ .Values.host_volume.openvas_storage.path }}
+        - name: psql-storage
+          hostPath:
+            path: {{ .Values.host_volume.psql_storage.path }}
+        - name: gvmd-socket
+          hostPath:
+            path: {{ .Values.host_volume.gvmd_socket.path }}
+      {{- end }}
 
       {{- with .Values.nodeSelector }}
       nodeSelector:

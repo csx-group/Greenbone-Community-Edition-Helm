@@ -46,22 +46,46 @@ cert:
   duration: 730h
   renewBefore: 72h
 
-ingress:
+nfs_volume:
   enabled: true
-  annotations:
-    "kubernetes.io/ingress.class": "traefik"
-    "traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
-    "traefik.ingress.kubernetes.io/router.tls": "true"
-  hosts:
-    - host: openvas.example.com
-  tls:
-    - secretName: openvas-ingress-tls-pki
-      hosts:
-        - openvas.example.com
+  shared_storage:
+    path: shared-storage-volume-nfs-pvc
+  gvmd_storage:
+    path: gvmd-storage-volume-nfs-pvc
+  openvas_storage:
+    path: openvas-storage-volume-nfs-pvc
+  psql_storage:
+    path: psql-volume-nfs-pvc
+  gvmd_socket:
+    path: gvmd-socket-volume-nfs-pvc
+host_volume:
+  shared_storage:
+    path: /mnt/kubernetes-data/openvas2/shared-storage
+  gvmd_storage:
+    path: /mnt/kubernetes-data/openvas2/gvmd-storage
+  openvas_storage:
+    path: /mnt/kubernetes-data/openvas2/openvas-storage
+  psql_storage:
+    path: /mnt/kubernetes-data/openvas2/psql-storage
+  gvmd_socket:
+    path: /mnt/kubernetes-data/openvas2/gvmd-socket
+
+# ingress:
+#   enabled: true
+#   annotations:
+#     "kubernetes.io/ingress.class": "traefik"
+#     "traefik.ingress.kubernetes.io/router.entrypoints": "websecure"
+#     "traefik.ingress.kubernetes.io/router.tls": "true"
+#   hosts:
+#     - host: openvas.example.com
+#   tls:
+#     - secretName: openvas-ingress-tls-pki
+#       hosts:
+#         - openvas.example.com
 
 fullnameOverride: ""
 nameOverride: ""
-namespaceOverride: ""
+namespaceOverride: "openvas"
 
 persistence:
   enabled: true

@@ -11,7 +11,7 @@ spec:
     - name: gsa
       protocol: TCP
       port: 80
-      targetPort: 80
+      targetPort: 9392
     - name: openvasd
       protocol: TCP
       port: 81
